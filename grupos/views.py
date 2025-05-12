@@ -1,3 +1,11 @@
 from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Grupo
+from .serializers import GrupoSerializer
+from utils.permissions import IsAdminUser
 
-# Create your views here.
+class GrupoViewSet(viewsets.ModelViewSet):
+    queryset = Grupo.objects.all()
+    serializer_class = GrupoSerializer
+    permission_classes = [IsAdminUser]  # Solo admin puede acceder
+

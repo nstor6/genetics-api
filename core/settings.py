@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-64__v&s_^15k-j)j!3s^5ga(dl+i9dj#5&h%&@ur!9(crqq&z6'
+SECRET_KEY = 'django-insecure-b7gor4kea@!6*f0qx2zb@p$fshu@7+dl%a1uwvl23)un*rg4k%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,6 +39,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+    'rest_framework',
+    'usuarios',
+    'animales',
+    'incidencias',
+    'tratamientos',
+    'eventos',
+    'notificaciones',
+    'grupos',
+    'logs',
+    'rest_framework_simplejwt',
+]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+AUTH_USER_MODEL = 'usuarios.Usuario'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
