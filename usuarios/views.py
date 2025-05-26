@@ -1,6 +1,4 @@
-from django.shortcuts import render
 
-# Create your views here.
 from rest_framework import generics
 from .models import Usuario
 from .serializers import UsuarioSerializer, RegistroUsuarioSerializer
@@ -9,7 +7,7 @@ from utils.permissions import IsAdminUser
 class RegistroUsuarioView(generics.CreateAPIView):
     queryset = Usuario.objects.all()
     serializer_class = RegistroUsuarioSerializer
-    permission_classes = []  # Registro público
+    permission_classes = []  # Público
 
 class UsuarioListView(generics.ListAPIView):
     queryset = Usuario.objects.all()

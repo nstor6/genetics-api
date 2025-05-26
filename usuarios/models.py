@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 from django.db import models
-
-=======
 
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
@@ -44,5 +41,4 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} {self.apellidos} ({self.email})"
->>>>>>> creacionDeModelos
 # Create your models here.
