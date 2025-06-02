@@ -250,3 +250,19 @@ LOGGING = {
         },
     },
 }
+
+# Configuración de Firebase
+try:
+    from .firebase import initialize_firebase
+    # Firebase se inicializa automáticamente al importar
+    print("Firebase configurado correctamente")
+except Exception as e:
+    print(f"Warning: Error configurando Firebase: {e}")
+
+# Para desarrollo, puedes probar la conexión
+if DEBUG:
+    try:
+        from .firebase import test_firebase_connection
+        test_firebase_connection()
+    except:
+        pass
