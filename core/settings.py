@@ -110,16 +110,33 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 # WebSockets Configuration
 ASGI_APPLICATION = 'core.asgi.application'
 
-# Channel Layers para WebSockets
-# Si tienes Redis instalado:
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('127.0.0.1', 6380)],  # Puerto 6380
+            "capacity": 1500,
+            "expiry": 10,
         },
     },
 }
+
+# Verificar conexión Redis al iniciar
+try:
+    import redis
+    r = redis.Redis(host='localhost', port=6380, db=0)
+    r.ping()
+    print("✅ Redis conectado correctamente en puerto 6380")
+except Exception as e:
+    print(f"❌ Error conectando a Redis: {e}")
+    print("🔄 Usando InMemoryChannelLayer como fallback")
+    
+    # Fallback a InMemory si Redis no está disponible
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
 
 # Si NO tienes Redis, usa esta configuración (solo para desarrollo):
 # CHANNEL_LAYERS = {
