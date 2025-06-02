@@ -396,3 +396,8 @@ def mis_estadisticas(request):
             {"error": f"Error interno del servidor: {str(e)}"}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+    def get(self, request):
+        usuario = request.user
+        serializer = UsuarioSerializer(usuario)
+        return Response(serializer.data, status=status.HTTP_200_OK)

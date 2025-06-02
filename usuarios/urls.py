@@ -32,4 +32,5 @@ urlpatterns = [
     path('actualizar-perfil/', actualizar_perfil, name='actualizar-perfil'),
     path('change-password/', cambiar_password, name='cambiar-password'),
     path('mis-estadisticas/', mis_estadisticas, name='mis-estadisticas'),
+    path('me/', mi_perfil, name='usuario-me'),
 ]
