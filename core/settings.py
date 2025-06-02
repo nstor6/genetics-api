@@ -28,10 +28,49 @@ SECRET_KEY = 'django-insecure-b7gor4kea@!6*f0qx2zb@p$fshu@7+dl%a1uwvl23)un*rg4k%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '*']
+
+# ============= CONFIGURACIÓN CORS =============
+# IMPORTANTE: Para desarrollo, usa configuración permisiva
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173", 
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'access-control-allow-origin',
+    'access-control-allow-headers',
+    'access-control-allow-methods',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET', 
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Application definition
 INSTALLED_APPS = [
+    'corsheaders',  # DEBE estar PRIMERO
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,7 +80,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'channels',  # WebSockets
-    'corsheaders',  # CORS
     'django_filters',  # Filtros
     'drf_yasg',  # Swagger
     # Apps del proyecto
@@ -58,7 +96,7 @@ INSTALLED_APPS = [
 
 # JWT Configuration
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # Aumentado para desarrollo
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -101,75 +139,39 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 20,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
 }
 
 # Custom User Model
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
-# WebSockets Configuration
+# WebSockets Configuration - Simplificado para desarrollo
 ASGI_APPLICATION = 'core.asgi.application'
 
+# Usar InMemory para desarrollo (no necesita Redis)
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6380)],  # Puerto 6380
-            "capacity": 1500,
-            "expiry": 10,
-        },
-    },
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
 }
 
-# Verificar conexión Redis al iniciar
-try:
-    import redis
-    r = redis.Redis(host='localhost', port=6380, db=0)
-    r.ping()
-    print("✅ Redis conectado correctamente en puerto 6380")
-except Exception as e:
-    print(f"❌ Error conectando a Redis: {e}")
-    print("🔄 Usando InMemoryChannelLayer como fallback")
-    
-    # Fallback a InMemory si Redis no está disponible
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels.layers.InMemoryChannelLayer'
-        }
-    }
-
-# Si NO tienes Redis, usa esta configuración (solo para desarrollo):
+# Si tienes Redis instalado, puedes usar esto:
 # CHANNEL_LAYERS = {
 #     'default': {
-#         'BACKEND': 'channels.layers.InMemoryChannelLayer'
-#     }
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [('127.0.0.1', 6379)],
+#             "capacity": 1500,
+#             "expiry": 10,
+#         },
+#     },
 # }
 
-# CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
-CORS_ALLOW_CREDENTIALS = True
-
-# Para producción, usar esto en lugar de CORS_ALLOW_ALL_ORIGINS:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://127.0.0.1:5173",
-#     "http://localhost:3000",
-# ]
-
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-]
-
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS debe estar primero
+    'corsheaders.middleware.CorsMiddleware',  # CORS debe estar PRIMERO
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -250,14 +252,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
@@ -265,21 +278,22 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'corsheaders': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
 
-# Configuración de Firebase
-try:
-    from .firebase import initialize_firebase
-    # Firebase se inicializa automáticamente al importar
-    print("Firebase configurado correctamente")
-except Exception as e:
-    print(f"Warning: Error configurando Firebase: {e}")
+# Desactivar CSRF para desarrollo de API
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
-# Para desarrollo, puedes probar la conexión
-if DEBUG:
-    try:
-        from .firebase import test_firebase_connection
-        test_firebase_connection()
-    except:
-        pass
+print("✅ Configuración Django cargada correctamente")
+print(f"🌐 CORS configurado: ALLOW_ALL_ORIGINS = {CORS_ALLOW_ALL_ORIGINS}")
+print(f"🔧 DEBUG mode: {DEBUG}")
